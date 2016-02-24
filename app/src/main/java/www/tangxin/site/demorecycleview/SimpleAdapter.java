@@ -17,6 +17,18 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
     private LayoutInflater mInflater;
     private Context mContext;
     private List<String> mDatas;
+
+    public interface OnItemClickListener{
+        void onItemClick(View view,int position);
+        void onItemLongClick(View view,int position);
+    }
+
+    private OnItemClickListener mOnItemClickListerner;
+
+    public void setOnItemClickListerner(OnItemClickListener listerner){
+        this.mOnItemClickListerner = listerner;
+    }
+
     public SimpleAdapter(Context context,List<String> datas){
         this.mContext = context;
         this.mDatas = datas;
@@ -30,6 +42,18 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
             tv = (TextView) itemView.findViewById(R.id.id_textView);
         }
     }
+    public void addData(int position){
+        mDatas.add(position,"insert one");
+      //  notifyDataSetChanged();
+        notifyItemInserted(position);
+
+
+    }
+    public void deleteData(int position){
+        mDatas.remove(position);
+        notifyItemRemoved(position);
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.item_single_textview,parent,false);
@@ -39,8 +63,30 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.tv.setText(mDatas.get(position));
+
+        if(mOnItemClickListerner != null){
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int layoutPosition =  holder.getLayoutPosition();//当前item位置 //插入了新的item位置变了所以要获取
+                    if (mOnItemClickListerner != null) {
+                        mOnItemClickListerner.onItemClick(holder.itemView, layoutPosition);//
+                    }
+                }
+            });
+        }
+
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int layoutPosition =   holder.getLayoutPosition();
+                mOnItemClickListerner.onItemLongClick(holder.itemView,layoutPosition);
+                return false;
+            }
+        });
     }
 
     @Override
